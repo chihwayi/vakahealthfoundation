@@ -55,6 +55,8 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // Allow access to H2 console
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/roles/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
