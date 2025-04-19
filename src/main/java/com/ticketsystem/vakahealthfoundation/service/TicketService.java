@@ -140,6 +140,7 @@ public class TicketService {
             dto.setAssignedToName(ticket.getAssignedTo().getFullName());
         }
 
+        System.out.println("DTO: " + dto);
         return dto;
     }
 }

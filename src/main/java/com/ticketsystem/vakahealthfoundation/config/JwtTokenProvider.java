@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ import java.util.function.Function;
 @Component
 public class JwtTokenProvider {
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${app.jwt.expiration-ms}")
@@ -37,13 +41,18 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key)
                 .compact();
+
+        logger.info("Generated JWT Token: {}", token);
+        logger.info("JWT Token Length: {}", token.length());
+
+        return token;
     }
 
     public String extractUsername(String token) {

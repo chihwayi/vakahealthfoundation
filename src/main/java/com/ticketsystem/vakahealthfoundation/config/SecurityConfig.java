@@ -41,7 +41,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/**") // Disable CSRF for H2 console and Auth Endpoint
+                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/tickets/**", "/api/comments/**") // Disable CSRF for H2 console and Auth Endpoint
                 )
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.disable()) // Completely disable frame options for H2

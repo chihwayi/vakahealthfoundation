@@ -32,21 +32,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
+            logger.info("Request to: " + request.getRequestURI());
+            logger.info("Authorization header present: " + (request.getHeader("Authorization") != null));
+
             if (StringUtils.hasText(jwt)) {
+                logger.info("JWT found in request");
                 String username = tokenProvider.extractUsername(jwt);
+                logger.info("Extracted username: " + username);
 
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                    logger.info("User details loaded for: " + username);
 
-                    if (tokenProvider.validateToken(jwt, userDetails)) {
+                    boolean isValid = tokenProvider.validateToken(jwt, userDetails);
+                    logger.info("Token validation result: " + isValid);
+
+                    if (isValid) {
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
                                         userDetails, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.info("Authentication set in security context");
+                    } else {
+                        logger.warn("Token validation failed");
                     }
+                } else {
+                    logger.warn("No username extracted or authentication already exists");
                 }
+            } else {
+                logger.info("No JWT token found in request");
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
