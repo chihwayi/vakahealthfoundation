@@ -6,11 +6,15 @@ import com.ticketsystem.zimsmartvillages.model.User;
 import com.ticketsystem.zimsmartvillages.service.TicketService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -32,10 +36,24 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getTicketById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<TicketDto> createTicket(@RequestBody TicketDto ticketDto,
-                                                  @AuthenticationPrincipal User currentUser) {
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TicketDto> createTextTicket(@RequestBody TicketDto ticketDto,
+                                                      @AuthenticationPrincipal User currentUser) {
         return new ResponseEntity<>(ticketService.createTicket(ticketDto, currentUser), HttpStatus.CREATED);
+    }
+
+    @PostMapping(value = "/with-media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<TicketDto> createTicketWithMedia(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("priority") Ticket.Priority priority,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam("contentType") Ticket.ContentType contentType,
+            @AuthenticationPrincipal User currentUser) throws IOException {
+
+        return new ResponseEntity<>(
+                ticketService.createTicketWithMedia(title, description, priority, file, contentType, currentUser),
+                HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
@@ -87,5 +105,12 @@ public class TicketController {
     public ResponseEntity<Page<TicketDto>> getTicketsByPriority(@RequestParam Ticket.Priority priority,
                                                                 Pageable pageable) {
         return ResponseEntity.ok(ticketService.getTicketsByPriority(priority, pageable));
+    }
+
+    @GetMapping("/by-content-type")
+    public ResponseEntity<Page<TicketDto>> getTicketsByContentType(
+            @RequestParam Ticket.ContentType contentType,
+            Pageable pageable) {
+        return ResponseEntity.ok(ticketService.getTicketsByContentType(contentType, pageable));
     }
 }

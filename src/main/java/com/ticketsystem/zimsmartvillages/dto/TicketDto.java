@@ -16,6 +16,10 @@ public class TicketDto {
     private String creatorName;
     private Long assignedToId;
     private String assignedToName;
+    private Ticket.ContentType contentType;
+    private String textContent;
+    private String imagePath;
+    private String audioPath;
 
     public Long getId() {
         return id;
@@ -103,5 +107,37 @@ public class TicketDto {
 
     public void setAssignedToName(String assignedToName) {
         this.assignedToName = assignedToName;
+    }
+
+    public Ticket.ContentType getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(Ticket.ContentType contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getAudioPath() {
+        return audioPath;
+    }
+
+    public void setAudioPath(String audioPath) {
+        this.audioPath = audioPath;
     }
 }

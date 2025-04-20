@@ -10,16 +10,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 @Service
 public class TicketService {
-
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
-    public TicketService(TicketRepository ticketRepository, UserRepository userRepository) {
+    public TicketService(TicketRepository ticketRepository, UserRepository userRepository,
+                         FileStorageService fileStorageService) {
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     public Page<TicketDto> getAllTickets(Pageable pageable) {
@@ -42,10 +46,44 @@ public class TicketService {
         ticket.setStatus(Ticket.Status.OPEN);
         ticket.setCreator(currentUser);
 
+        // Set content type and related content
+        ticket.setContentType(ticketDto.getContentType());
+        if (ticketDto.getContentType() == Ticket.ContentType.TEXT) {
+            ticket.setTextContent(ticketDto.getTextContent());
+        } else if (ticketDto.getContentType() == Ticket.ContentType.IMAGE) {
+            ticket.setImagePath(ticketDto.getImagePath());
+        } else if (ticketDto.getContentType() == Ticket.ContentType.AUDIO) {
+            ticket.setAudioPath(ticketDto.getAudioPath());
+        }
+
         if (ticketDto.getAssignedToId() != null) {
             User assignedUser = userRepository.findById(ticketDto.getAssignedToId())
                     .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + ticketDto.getAssignedToId()));
             ticket.setAssignedTo(assignedUser);
+        }
+
+        return convertToDto(ticketRepository.save(ticket));
+    }
+
+    @Transactional
+    public TicketDto createTicketWithMedia(String title, String description, Ticket.Priority priority,
+                                           MultipartFile file, Ticket.ContentType contentType, User currentUser) throws IOException {
+        Ticket ticket = new Ticket();
+        ticket.setTitle(title);
+        ticket.setDescription(description);
+        ticket.setPriority(priority);
+        ticket.setStatus(Ticket.Status.OPEN);
+        ticket.setCreator(currentUser);
+        ticket.setContentType(contentType);
+
+        if (contentType == Ticket.ContentType.IMAGE && file != null) {
+            String imagePath = fileStorageService.storeFile(file, "image");
+            ticket.setImagePath(imagePath);
+        } else if (contentType == Ticket.ContentType.AUDIO && file != null) {
+            String audioPath = fileStorageService.storeFile(file, "audio");
+            ticket.setAudioPath(audioPath);
+        } else if (contentType == Ticket.ContentType.TEXT) {
+            ticket.setTextContent(description);
         }
 
         return convertToDto(ticketRepository.save(ticket));
@@ -62,6 +100,19 @@ public class TicketService {
 
         if (ticketDto.getStatus() != null) {
             ticket.setStatus(ticketDto.getStatus());
+        }
+
+        // Update content fields if provided
+        if (ticketDto.getContentType() != null) {
+            ticket.setContentType(ticketDto.getContentType());
+
+            if (ticketDto.getContentType() == Ticket.ContentType.TEXT && ticketDto.getTextContent() != null) {
+                ticket.setTextContent(ticketDto.getTextContent());
+            } else if (ticketDto.getContentType() == Ticket.ContentType.IMAGE && ticketDto.getImagePath() != null) {
+                ticket.setImagePath(ticketDto.getImagePath());
+            } else if (ticketDto.getContentType() == Ticket.ContentType.AUDIO && ticketDto.getAudioPath() != null) {
+                ticket.setAudioPath(ticketDto.getAudioPath());
+            }
         }
 
         if (ticketDto.getAssignedToId() != null) {
@@ -107,6 +158,11 @@ public class TicketService {
                 .map(this::convertToDto);
     }
 
+    public Page<TicketDto> getTicketsByContentType(Ticket.ContentType contentType, Pageable pageable) {
+        return ticketRepository.findByContentType(contentType, pageable)
+                .map(this::convertToDto);
+    }
+
     public Page<TicketDto> getTicketsAssignedTo(User assignedTo, Pageable pageable) {
         return ticketRepository.findByAssignedTo(assignedTo, pageable)
                 .map(this::convertToDto);
@@ -131,6 +187,10 @@ public class TicketService {
         dto.setStatus(ticket.getStatus());
         dto.setCreatedDate(ticket.getCreatedDate());
         dto.setUpdatedDate(ticket.getUpdatedDate());
+        dto.setContentType(ticket.getContentType());
+        dto.setTextContent(ticket.getTextContent());
+        dto.setImagePath(ticket.getImagePath());
+        dto.setAudioPath(ticket.getAudioPath());
 
         dto.setCreatorId(ticket.getCreator().getId());
         dto.setCreatorName(ticket.getCreator().getFullName());
@@ -140,7 +200,6 @@ public class TicketService {
             dto.setAssignedToName(ticket.getAssignedTo().getFullName());
         }
 
-        System.out.println("DTO: " + dto);
         return dto;
     }
 }

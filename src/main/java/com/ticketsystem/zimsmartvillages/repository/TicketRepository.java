@@ -18,5 +18,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Page<Ticket> findByPriority(Ticket.Priority priority, Pageable pageable);
     Page<Ticket> findByCreatedDateBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
     List<Ticket> findTop5ByOrderByCreatedDateDesc();
+    Page<Ticket> findByContentType(Ticket.ContentType contentType, Pageable pageable);
+
+    List<Ticket> findByCreatorAndCreatedDateAfter(User user, LocalDateTime startDate);
+
+    List<Ticket> findByAssignedToAndStatusInAndUpdatedDateAfter(User user, List<Ticket.Status> list, LocalDateTime startDate);
+
+    List<Ticket> findByAssignedToAndCreatedDateAfter(User agent, LocalDateTime thirtyDaysAgo);
+
+    List<Ticket> findByCreatedDateAfter(LocalDateTime thirtyDaysAgo);
 }
 

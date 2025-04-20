@@ -43,12 +43,29 @@ public class Ticket {
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "content_type", nullable = false)
+    private ContentType contentType = ContentType.TEXT;
+
+    @Column(columnDefinition = "TEXT")
+    private String textContent;
+
+    @Column(name = "image_path")
+    private String imagePath;
+
+    @Column(name = "audio_path")
+    private String audioPath;
+
     public enum Priority {
         LOW, MEDIUM, HIGH, CRITICAL
     }
 
     public enum Status {
         OPEN, IN_PROGRESS, RESOLVED, CLOSED, REOPENED
+    }
+
+    public enum ContentType {
+        TEXT, IMAGE, AUDIO
     }
 
     @PrePersist
@@ -60,6 +77,9 @@ public class Ticket {
         }
         if (priority == null) {
             priority = Priority.MEDIUM;
+        }
+        if (contentType == null) {
+            contentType = ContentType.TEXT;
         }
     }
 
@@ -147,4 +167,37 @@ public class Ticket {
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
     }
+
+    public ContentType getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(ContentType contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getTextContent() {
+        return textContent;
+    }
+
+    public void setTextContent(String textContent) {
+        this.textContent = textContent;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getAudioPath() {
+        return audioPath;
+    }
+
+    public void setAudioPath(String audioPath) {
+        this.audioPath = audioPath;
+    }
+
 }

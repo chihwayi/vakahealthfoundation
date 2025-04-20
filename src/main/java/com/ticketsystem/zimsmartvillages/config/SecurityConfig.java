@@ -40,7 +40,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/tickets/**", "/api/comments/**") // Disable CSRF for H2 console and Auth Endpoint
+                        .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/tickets/**", "/api/comments/**", "/api/files/**") // Disable CSRF for H2 console and Auth Endpoint
                 )
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.disable()) // Completely disable frame options for H2
@@ -52,10 +52,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll() // Allow access to H2 console
+                        .requestMatchers("/api/files/**").permitAll()
                         .requestMatchers("/api/tickets/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/reports/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
