@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ticketsystem</groupId>
-	<artifactId>vakahealthfoundation</artifactId>
+	<artifactId>zimsmartvillages</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>vakahealthfoundation</name>
 	<description>A ticketing system</description>
